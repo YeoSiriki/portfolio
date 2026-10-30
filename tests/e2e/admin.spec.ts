@@ -136,12 +136,13 @@ test.describe('gestion du contenu', () => {
     expect(fake.status()).toBe(400);
     expect((await fake.json()).error).toBe('Format refusé : image JPEG, PNG ou WebP uniquement.');
 
-    // Une image de plus de 5 Mo : refusée sur sa taille.
+    // Une image de plus de 5 Mo : refusée sur sa taille. Sur Vercel, la plateforme la refuse elle-même
+    // (au-delà de 4,5 Mo, code 413) avant que le site ne réponde.
     const heavy = Buffer.alloc(5 * 1024 * 1024 + 10);
     Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]).copy(heavy);
     const tooBig = await send('lourde.png', 'image/png', heavy);
-    expect(tooBig.status()).toBe(400);
-    expect((await tooBig.json()).error).toBe('Image trop lourde : 5 Mo maximum.');
+    expect([400, 413]).toContain(tooBig.status());
+    if (tooBig.status() === 400) expect((await tooBig.json()).error).toBe('Image trop lourde : 5 Mo maximum.');
 
     // Une vraie image : acceptée, convertie en WebP et servie par le site.
     const pixel = Buffer.from(
