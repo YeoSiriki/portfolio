@@ -35,6 +35,8 @@ async function upload(file: File, kind: UploadKind, folder: string): Promise<{ u
   body.set('folder', folder);
   try {
     const response = await fetch('/api/upload', { method: 'POST', body });
+    // Vercel refuse lui-même les envois de plus de 4,5 Mo, avant que le site ne réponde.
+    if (response.status === 413) return { error: "Fichier trop lourd pour l'hébergeur : 4 Mo maximum." };
     const payload = (await response.json()) as { url?: string; error?: string };
     if (!response.ok || !payload.url) return { error: payload.error ?? "L'envoi a échoué." };
     return { url: payload.url };
