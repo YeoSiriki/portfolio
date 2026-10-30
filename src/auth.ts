@@ -4,7 +4,9 @@ import bcrypt from 'bcryptjs';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import GitHub from 'next-auth/providers/github';
+import { LOGIN_MAX_ATTEMPTS, LOGIN_WINDOW_MS } from '@/lib/constants';
 import { prisma } from '@/lib/db';
+import { clientIpHash, rateLimit, resetRateLimit } from '@/lib/rate-limit';
 import { loginSchema } from '@/lib/schemas';
 
 export const githubLoginEnabled = Boolean(
@@ -29,13 +31,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       credentials: { email: {}, password: {} },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
+        // Le blocage est appliqué ici et non dans le seul formulaire : /api/auth/callback/credentials
+        // appelle authorize() directement. Il est vérifié avant bcrypt, coûteux en calcul.
+        const key = `login:${await clientIpHash(request.headers)}`;
+        if (!(await rateLimit(key, LOGIN_MAX_ATTEMPTS, LOGIN_WINDOW_MS)).ok) return null;
+
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) return null;
         const user = await prisma.user.findUnique({ where: { email: parsed.data.email.toLowerCase() } });
         dummyHash ??= await bcrypt.hash(randomUUID(), 12);
         const matches = await bcrypt.compare(parsed.data.password, user?.passwordHash ?? dummyHash);
         if (!user?.passwordHash || !matches || user.role !== 'ADMIN') return null;
+
+        await resetRateLimit(key);
         return { id: user.id, email: user.email, role: user.role };
       },
     }),

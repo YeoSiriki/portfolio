@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { estimateReadTime, formatPeriod, formatRelative, formatYears, parseLocalDateTime } from '@/lib/format';
-import { decideRateLimit } from '@/lib/rate-limit-core';
+import { decideRateLimit, isBlocked } from '@/lib/rate-limit-core';
 import { isValidSlug, slugify, uniqueSlug } from '@/lib/slug';
 import { isSafeKey, keyFromUrl } from '@/lib/storage';
 
@@ -96,6 +96,14 @@ describe('limitation de débit', () => {
       allowed: true,
       count: 1,
     });
+  });
+
+  it('signale un blocage sans compter de nouvel essai', () => {
+    const resetAt = new Date(now.getTime() + 60_000);
+    expect(isBlocked(null, now, 5)).toBe(false);
+    expect(isBlocked({ count: 4, resetAt }, now, 5)).toBe(false);
+    expect(isBlocked({ count: 5, resetAt }, now, 5)).toBe(true);
+    expect(isBlocked({ count: 5, resetAt: new Date(now.getTime() - 1) }, now, 5)).toBe(false);
   });
 });
 

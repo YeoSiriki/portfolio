@@ -4,20 +4,18 @@ import { AuthError } from 'next-auth';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { signIn, signOut } from '@/auth';
-import { ADMIN_HINT_COOKIE } from '@/lib/constants';
-import { clientIpHash, rateLimit, resetRateLimit } from '@/lib/rate-limit';
+import { ADMIN_HINT_COOKIE, LOGIN_MAX_ATTEMPTS } from '@/lib/constants';
+import { clientIpHash, isRateLimited } from '@/lib/rate-limit';
 import { loginSchema } from '@/lib/schemas';
 
 export type LoginState = { error?: string };
 
 // Message volontairement générique : il ne dit pas si c'est l'e-mail ou le mot de passe qui est faux.
 const INVALID = 'Identifiants incorrects.';
-const MAX_ATTEMPTS = 5;
-const WINDOW_MS = 15 * 60 * 1000;
 
 export async function login(_previous: LoginState, formData: FormData): Promise<LoginState> {
-  const key = `login:${await clientIpHash()}`;
-  if (!(await rateLimit(key, MAX_ATTEMPTS, WINDOW_MS)).ok) {
+  // Les essais sont comptés dans authorize() (src/auth.ts) ; ici, on affiche seulement le blocage.
+  if (await isRateLimited(`login:${await clientIpHash()}`, LOGIN_MAX_ATTEMPTS)) {
     return { error: 'Trop de tentatives. Réessaie dans 15 minutes.' };
   }
 
@@ -31,7 +29,6 @@ export async function login(_previous: LoginState, formData: FormData): Promise<
     throw error;
   }
 
-  await resetRateLimit(key);
   redirect('/admin');
 }
 

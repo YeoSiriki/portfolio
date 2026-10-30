@@ -98,6 +98,10 @@ export const CONTACT_TOPICS = [
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 export const MAX_DOCUMENT_BYTES = 20 * 1024 * 1024;
 
+// Connexion à l'admin : 5 essais par quart d'heure et par adresse IP.
+export const LOGIN_MAX_ATTEMPTS = 5;
+export const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+
 // Tag de cache unique : tout contenu public est revalidé après une modification dans l'admin.
 export const CONTENT_TAG = 'content';
 
