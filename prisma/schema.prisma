@@ -1,0 +1,279 @@
+// Modèle de données du portfolio (cahier des charges, section 7).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+}
+
+enum ProjectCategory {
+  RECHERCHE
+  RESEAUX
+  DEVELOPPEMENT
+  ENSEIGNEMENT
+}
+
+enum ProjectState {
+  TERMINE
+  EN_COURS
+  EXPERIMENTAL
+  TERRAIN
+}
+
+enum PublicationType {
+  MEMOIRE
+  ARTICLE
+  COMMUNICATION
+}
+
+enum PublicationStatus {
+  SOUTENU
+  PUBLIE
+  EN_REVISION
+  SOUMIS
+  EN_PREPARATION
+}
+
+enum ExperienceKind {
+  EMPLOI
+  STAGE
+  BENEVOLAT
+  INDEPENDANT
+}
+
+enum EducationKind {
+  DIPLOME
+  CERTIFICATION
+}
+
+enum ResourceKind {
+  COURS
+  SUJET_CORRIGE
+  FICHE
+  FORMATION
+}
+
+enum ResourceStatus {
+  BROUILLON
+  PUBLIE
+}
+
+enum PostStatus {
+  BROUILLON
+  PROGRAMME
+  PUBLIE
+}
+
+enum MessageStatus {
+  NEW
+  READ
+  ARCHIVED
+  SPAM
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?
+  githubId     String?  @unique
+  role         Role     @default(ADMIN)
+  createdAt    DateTime @default(now())
+}
+
+// Une seule ligne (id = 1).
+model Profile {
+  id                Int      @id @default(1)
+  fullName          String
+  shortName         String
+  headline          String
+  bio               String
+  city              String
+  publicEmail       String
+  availabilityBadge String
+  tickerItems       String[]
+  photoUrl          String?
+  cvFrUrl           String?
+  cvEnUrl           String?
+  githubUrl         String?
+  linkedinUrl       String?
+  // Blocs de la page d'accueil (SCAT, enseignement, langues, contact), validés par homeSchema.
+  home              Json
+  privacyPolicy     String   @default("")
+  termsOfUse        String   @default("")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Project {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  title       String
+  category    ProjectCategory
+  state       ProjectState
+  year        Int
+  summary     String
+  role        String          @default("")
+  body        String          @default("")
+  techs       String[]
+  linkUrl     String?
+  coverUrl    String?
+  isPublished Boolean         @default(false)
+  position    Int             @default(0)
+  images      ProjectImage[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([isPublished, position])
+}
+
+model ProjectImage {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String   @default("")
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId, position])
+}
+
+model Publication {
+  id          String            @id @default(cuid())
+  slug        String            @unique
+  type        PublicationType
+  status      PublicationStatus
+  title       String
+  authors     String            @default("")
+  venue       String            @default("")
+  // « AAAA » ou « AAAA-MM »
+  date        String            @default("")
+  abstract    String            @default("")
+  keywords    String[]
+  url         String?
+  pdfUrl      String?
+  hasPage     Boolean           @default(false)
+  body        String            @default("")
+  isPublished Boolean           @default(false)
+  position    Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([isPublished, position])
+}
+
+model Experience {
+  id          String         @id @default(cuid())
+  role        String
+  org         String         @default("")
+  city        String         @default("")
+  kind        ExperienceKind
+  // « AAAA » ou « AAAA-MM »
+  start       String
+  end         String         @default("")
+  isCurrent   Boolean        @default(false)
+  missions    String[]
+  tools       String[]
+  position    Int            @default(0)
+  isPublished Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([isPublished, position])
+}
+
+model Education {
+  id          String        @id @default(cuid())
+  kind        EducationKind
+  title       String
+  school      String        @default("")
+  city        String        @default("")
+  startYear   Int?
+  endYear     Int?
+  mention     String        @default("")
+  description String        @default("")
+  // Justificatif privé : jamais exposé sur le site public.
+  proofUrl    String?
+  position    Int           @default(0)
+  isPublished Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([isPublished, position])
+}
+
+model Skill {
+  id        String   @id @default(cuid())
+  group     String
+  label     String
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([position])
+}
+
+model Resource {
+  id            String         @id @default(cuid())
+  title         String
+  level         String         @default("")
+  subject       String         @default("")
+  kind          ResourceKind
+  description   String         @default("")
+  fileUrl       String?
+  allowDownload Boolean        @default(false)
+  status        ResourceStatus @default(BROUILLON)
+  position      Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([status, position])
+}
+
+model Post {
+  id        String     @id @default(cuid())
+  slug      String     @unique
+  title     String
+  category  String     @default("")
+  status    PostStatus @default(BROUILLON)
+  publishAt DateTime?
+  readTime  Int        @default(0)
+  coverUrl  String?
+  excerpt   String     @default("")
+  content   String     @default("")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([status, publishAt])
+}
+
+model Message {
+  id        String        @id @default(cuid())
+  name      String
+  email     String
+  topic     String
+  body      String
+  status    MessageStatus @default(NEW)
+  ipHash    String        @default("")
+  replyBody String?
+  repliedAt DateTime?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([status, createdAt])
+}
+
+// Table technique : limitation de débit (connexion, formulaire de contact).
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+}

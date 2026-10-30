@@ -1,0 +1,10 @@
+.next
+node_modules
+src/generated
+storage
+backups
+package-lock.json
+prisma/migrations
+test-results
+playwright-report
+.postgres

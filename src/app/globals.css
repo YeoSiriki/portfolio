@@ -1,0 +1,1157 @@
+@import 'tailwindcss';
+
+/*
+ * Jetons de la charte graphique.
+ * Thème « académique » : fond blanc cassé, encre bleu nuit (jamais de noir pur), accent bleu encre
+ * et filets or. Titres en serif (Newsreader), texte en IBM Plex Sans. Tous les couples texte / fond
+ * respectent un contraste d'au moins 4,5:1 (3:1 pour les bordures de champs).
+ */
+@theme {
+  --color-bg: #fbfaf7;
+  --color-bg-admin: #f6f5f0;
+  --color-surface: #ffffff;
+  --color-surface-admin: #fdfcf9;
+  --color-sand: #f2f0e9;
+  --color-line: #e2ded4;
+  --color-field: #8e8a80;
+  --color-input: #ffffff;
+  --color-ink: #161c2c;
+  --color-ink-2: #3d4558;
+  --color-ink-3: #5c6476;
+  --color-accent: #1f3a70;
+  --color-accent-strong: #172c56;
+  --color-on-accent: #ffffff;
+  --color-warm: #8a6420;
+  --color-gold: #c9a45a;
+  --color-done-bg: #e3e9f5;
+  --color-progress: #7a4e00;
+  --color-progress-bg: #f5e6bf;
+  --color-terrain: #0e5c57;
+  --color-terrain-bg: #dcefec;
+  --color-danger: #9e2a1f;
+  --color-danger-bg: #f9e1dc;
+  --shadow-soft: 0 1px 2px rgb(22 28 44 / 0.04);
+  --shadow-lift: 0 1px 2px rgb(22 28 44 / 0.05), 0 22px 40px -24px rgb(22 28 44 / 0.3);
+
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), ui-serif, Georgia, serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --radius-card: 14px;
+  --radius-btn: 8px;
+  --radius-field: 8px;
+
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+/*
+ * Bloc bleu nuit : carte de profil, section contact et pied de page. Les jetons sont redéfinis dans
+ * le bloc, si bien que boutons, liens, étiquettes et champs s'y recolorent d'eux-mêmes (accent or).
+ */
+.theme-inverse {
+  --color-bg: #15223f;
+  --color-surface: #1c2c50;
+  --color-sand: #1f3058;
+  --color-line: #2f4270;
+  --color-field: #8796bd;
+  --color-input: #111b33;
+  --color-ink: #f4f2ec;
+  --color-ink-2: #d2d7e3;
+  --color-ink-3: #a9b3c9;
+  --color-accent: #d8b66c;
+  --color-accent-strong: #e6c88a;
+  --color-on-accent: #15223f;
+  --color-warm: #d8b66c;
+  --shadow-soft: none;
+  --shadow-lift: 0 18px 36px -22px rgb(0 0 0 / 0.5);
+
+  background: var(--color-bg);
+  color: var(--color-ink);
+  color-scheme: dark;
+}
+
+/* Bleu plus profond pour le pied de page : il se détache de la section contact qui le précède. */
+.theme-deep {
+  --color-bg: #0f1930;
+  --color-line: #263759;
+}
+
+/* Bande gris chaud : alterne avec le fond blanc cassé pour rythmer la page d'accueil.
+   Le fond y est redéfini pour que les éléments qui l'imitent (points de la frise) restent raccord. */
+.band-sand {
+  --color-bg: var(--color-sand);
+  background: var(--color-bg);
+}
+
+/* Retour au thème clair à l'intérieur d'un bloc bleu (la carte du formulaire de contact). */
+.theme-light {
+  --color-bg: #fbfaf7;
+  --color-surface: #ffffff;
+  --color-sand: #f2f0e9;
+  --color-line: #e2ded4;
+  --color-field: #8e8a80;
+  --color-input: #ffffff;
+  --color-ink: #161c2c;
+  --color-ink-2: #3d4558;
+  --color-ink-3: #5c6476;
+  --color-accent: #1f3a70;
+  --color-accent-strong: #172c56;
+  --color-on-accent: #ffffff;
+  --color-warm: #8a6420;
+  --shadow-soft: 0 1px 2px rgb(22 28 44 / 0.04);
+  --shadow-lift: 0 1px 2px rgb(22 28 44 / 0.05), 0 22px 40px -24px rgb(22 28 44 / 0.3);
+
+  color: var(--color-ink);
+  color-scheme: light;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Icônes en traits fins. */
+svg.lucide {
+  stroke-width: 1.8;
+}
+
+@layer components {
+  /* Titres : Newsreader, serif éditoriale, en graisse moyenne. */
+  .display {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+  }
+
+  /* Surtitre de section : petites capitales espacées, numéro compris (« 01 · Recherche »). */
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .label-mono {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .meta-mono {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--color-ink-3);
+  }
+
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 1.125rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-btn);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    transition:
+      transform 0.2s var(--ease-out-expo),
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .btn:active {
+    transform: scale(0.98);
+  }
+
+  .btn-lg {
+    min-height: 3.25rem;
+    padding: 0.75rem 1.4rem;
+    font-size: 1rem;
+  }
+
+  .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    box-shadow: 0 12px 22px -14px color-mix(in srgb, var(--color-accent) 85%, transparent);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-accent-strong);
+  }
+
+  .btn-secondary {
+    border-color: var(--color-field);
+    color: var(--color-ink);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    border-color: var(--color-ink-3);
+    background: var(--color-surface);
+  }
+
+  .btn-danger {
+    border-color: color-mix(in srgb, var(--color-danger) 45%, transparent);
+    color: var(--color-danger);
+  }
+
+  .btn-danger:hover:not(:disabled) {
+    background: var(--color-danger-bg);
+  }
+
+  /* La flèche d'un bouton ou d'un lien avance légèrement au survol. */
+  .nudge svg,
+  .nudge-x svg,
+  .nudge-down svg,
+  .nudge-up svg,
+  .nudge-back svg {
+    transition: transform 0.25s var(--ease-out-expo);
+  }
+
+  .nudge:hover svg {
+    transform: translate(2px, -2px);
+  }
+
+  .nudge-x:hover svg {
+    transform: translateX(3px);
+  }
+
+  .nudge-down:hover svg {
+    transform: translateY(2px);
+  }
+
+  .nudge-up:hover svg {
+    transform: translateY(-2px);
+  }
+
+  .nudge-back:hover svg {
+    transform: translateX(-3px);
+  }
+
+  .field {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--color-field);
+    border-radius: var(--radius-field);
+    background: var(--color-input);
+    color: var(--color-ink);
+    font-size: 0.9375rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .field::placeholder {
+    color: var(--color-ink-3);
+  }
+
+  .field:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+    border-color: var(--color-accent);
+  }
+
+  .field[aria-invalid='true'] {
+    border-color: var(--color-danger);
+  }
+
+  .field-label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-ink-2);
+  }
+
+  /* Lien souligné dont le trait se colore au survol. */
+  .link {
+    text-decoration: underline;
+    text-decoration-color: var(--color-field);
+    text-underline-offset: 0.25em;
+    transition:
+      color 0.2s ease,
+      text-decoration-color 0.2s ease;
+  }
+
+  .link:hover {
+    color: var(--color-accent);
+    text-decoration-color: var(--color-accent);
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.55rem;
+    border: 1px solid var(--color-line);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-ink-2);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  /* Texte long issu du Markdown (blog, page SCAT, pages légales). */
+  .prose {
+    color: var(--color-ink-2);
+    font-size: 1.0625rem;
+    line-height: 1.75;
+  }
+
+  .prose > * + * {
+    margin-top: 1.15em;
+  }
+
+  .prose h2 {
+    margin-top: 2.2em;
+    color: var(--color-ink);
+    font-family: var(--font-serif);
+    font-size: 1.85rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  .prose h3 {
+    margin-top: 1.8em;
+    color: var(--color-ink);
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    font-weight: 600;
+  }
+
+  .prose strong {
+    color: var(--color-ink);
+    font-weight: 650;
+  }
+
+  .prose a {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+    text-underline-offset: 0.25em;
+  }
+
+  .prose ul,
+  .prose ol {
+    padding-left: 1.4em;
+  }
+
+  .prose ul {
+    list-style: disc;
+  }
+
+  .prose ol {
+    list-style: decimal;
+  }
+
+  .prose li + li {
+    margin-top: 0.4em;
+  }
+
+  .prose li::marker {
+    color: var(--color-ink-3);
+  }
+
+  .prose blockquote {
+    padding-left: 1rem;
+    border-left: 2px solid var(--color-accent);
+    color: var(--color-ink);
+  }
+
+  .prose code {
+    padding: 0.1em 0.35em;
+    border-radius: 5px;
+    background: var(--color-surface);
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+
+  .prose pre {
+    overflow-x: auto;
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    background: var(--color-surface);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .prose pre code {
+    padding: 0;
+    background: none;
+  }
+
+  .prose table {
+    display: block;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+
+  .prose th,
+  .prose td {
+    padding: 0.5rem 0.85rem;
+    border: 1px solid var(--color-line);
+    text-align: left;
+  }
+
+  .prose th {
+    color: var(--color-ink);
+    font-weight: 650;
+  }
+
+  .prose hr {
+    border-color: var(--color-line);
+  }
+
+  .prose .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.35rem 0;
+  }
+}
+
+/* Illustrations des cartes de projet (src/components/project-cover.tsx) : un fond par catégorie,
+   piqué d'une trame de points. --cover-bg sert aussi au remplissage des formes qui masquent un trait. */
+.cover-research,
+.cover-network,
+.cover-dev,
+.cover-teach {
+  background-color: var(--cover-bg);
+  background-image: radial-gradient(rgb(246 242 233 / 0.13) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.cover-research {
+  --cover-bg: #1f3a70;
+}
+
+.cover-network {
+  --cover-bg: #15223f;
+}
+
+.cover-dev {
+  --cover-bg: #3a4a68;
+}
+
+.cover-teach {
+  --cover-bg: #f3ecdb;
+  background-image: none;
+}
+
+.cover-art {
+  transition: transform 0.7s var(--ease-out-expo);
+}
+
+@media (hover: hover) {
+  .group:hover .cover-art {
+    transform: scale(1.05);
+  }
+}
+
+/* Trame de l'accueil : elle s'efface vers le texte pour ne jamais gêner la lecture. */
+.hero-backdrop {
+  mask-image: linear-gradient(to left, #000 45%, transparent 88%);
+}
+
+/* Frise du parcours : un fil vertical, un point par étape, plein pour le poste actuel. */
+.timeline-rail {
+  position: relative;
+}
+
+.timeline-rail::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background: var(--color-line);
+  content: '';
+  translate: -50% 0;
+}
+
+.timeline > :first-child .timeline-rail::before {
+  top: 0.75rem;
+}
+
+.timeline > :last-child .timeline-rail::before {
+  bottom: auto;
+  height: 0.75rem;
+}
+
+.timeline-rail::after {
+  position: absolute;
+  top: 0.35rem;
+  left: 50%;
+  width: 0.875rem;
+  height: 0.875rem;
+  border: 2px solid var(--color-accent);
+  border-radius: 50%;
+  background: var(--color-bg);
+  content: '';
+  translate: -50% 0;
+}
+
+.timeline-rail.is-current::after {
+  background: var(--color-accent);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
+/* À l'arrivée de chaque étape, le fil descend jusqu'à elle puis son point apparaît. */
+.timeline-rail::before {
+  transform-origin: top;
+}
+
+[data-reveal] .timeline-rail::before {
+  transition: transform 0.9s var(--ease-out-expo) var(--reveal-delay, 0ms);
+}
+
+[data-reveal] .timeline-rail::after {
+  transition:
+    transform 0.5s var(--ease-out-expo) calc(var(--reveal-delay, 0ms) + 0.35s),
+    opacity 0.3s ease calc(var(--reveal-delay, 0ms) + 0.35s);
+}
+
+[data-reveal][data-pending] .timeline-rail::before {
+  transform: scaleY(0);
+}
+
+[data-reveal][data-pending] .timeline-rail::after {
+  opacity: 0;
+  transform: scale(0.3);
+}
+
+/* Trame de l'accueil : les liens se tracent un à un au chargement, une seule fois. */
+@keyframes trace {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+.trace {
+  stroke-dasharray: 1;
+  animation: trace 1.4s var(--ease-out-expo) both;
+  animation-delay: calc(var(--n, 0) * 45ms + 300ms);
+}
+
+/* =====================================================================
+   Motion design
+
+   Le mouvement sert à expliquer, pas à décorer :
+   - continuité : un titre de carte devient le titre de la page ouverte ;
+   - hiérarchie : ce qui arrive monte, ce qui part s'efface vite ;
+   - état : un drone s'allume quand il couvre la cible.
+
+   Règles : entrées de 240 à 850 ms sur une courbe « expo out », sorties de 150 ms,
+   déplacements courts (10 à 40 px), aucun rebond, rien de lié au curseur.
+   Tout s'arrête avec le réglage système « réduire les animations ».
+   ===================================================================== */
+
+:root {
+  --motion-exit: 150ms;
+  --motion-enter: 260ms;
+  --motion-move: 440ms;
+  --ease-in-out-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* --- 1. Entrée de page (CSS pur : visible sans JavaScript) --- */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@keyframes rise-soft {
+  from {
+    transform: translateY(12px);
+  }
+}
+
+@keyframes line-up {
+  from {
+    transform: translateY(104%);
+  }
+}
+
+/* Entrée échelonnée : --i fixe l'ordre d'apparition. */
+.rise {
+  animation: rise 0.7s var(--ease-out-expo) both;
+  animation-delay: calc(var(--i, 0) * 80ms + 60ms);
+}
+
+/* Variante sans fondu, pour les grands blocs de texte : ils sont peints dès la première image. */
+.rise-soft {
+  animation: rise-soft 0.7s var(--ease-out-expo) both;
+  animation-delay: calc(var(--i, 0) * 80ms + 60ms);
+}
+
+/* Le nom se dévoile ligne par ligne derrière un masque. */
+/* La marge haute laisse passer les points des « i » et les hampes des lettres en serif. */
+.line-mask {
+  display: block;
+  overflow: hidden;
+  margin-top: -0.16em;
+  padding-top: 0.16em;
+  padding-bottom: 0.06em;
+}
+
+.line-mask > span {
+  display: block;
+  animation: line-up 0.9s var(--ease-out-expo) both;
+  animation-delay: calc(var(--i, 0) * 110ms + 120ms);
+}
+
+/* --- 2. Apparitions au défilement ---
+   <RevealBox> pose data-pending sur un bloc situé sous l'écran, puis le retire à son entrée dans l'écran :
+   le bloc passe alors de l'état masqué à son état normal. */
+
+[data-reveal] {
+  transition:
+    opacity 0.6s var(--ease-out-expo),
+    transform 0.6s var(--ease-out-expo);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+[data-reveal][data-pending] {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+/* Dans un groupe, les éléments se suivent à 70 ms d'intervalle. */
+[data-reveal-group] > :nth-child(2) {
+  --reveal-delay: 70ms;
+}
+
+[data-reveal-group] > :nth-child(3) {
+  --reveal-delay: 140ms;
+}
+
+[data-reveal-group] > :nth-child(4) {
+  --reveal-delay: 210ms;
+}
+
+[data-reveal-group] > :nth-child(5) {
+  --reveal-delay: 280ms;
+}
+
+[data-reveal-group] > :nth-child(n + 6) {
+  --reveal-delay: 350ms;
+}
+
+/* Titres de section : le texte monte derrière un masque, comme le nom de l'en-tête. */
+.mask-line {
+  display: block;
+  overflow: hidden;
+  margin-block: -0.12em;
+  padding-block: 0.12em;
+}
+
+.mask-line > span {
+  display: block;
+}
+
+[data-reveal] .mask-line > span {
+  transition: transform 0.85s var(--ease-out-expo) 80ms;
+}
+
+[data-reveal][data-pending] .mask-line > span {
+  transform: translateY(108%);
+}
+
+/* En-tête de section : un filet fin sur toute la largeur, et un trait d'accent plus épais à gauche.
+   Les deux se tracent de gauche à droite quand la section arrive à l'écran. */
+.section-rule {
+  position: relative;
+}
+
+.section-rule::before,
+.section-rule::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  content: '';
+  transform-origin: left;
+}
+
+.section-rule::before {
+  width: 100%;
+  height: 1px;
+  background: var(--color-line);
+}
+
+.section-rule::after {
+  top: -1px;
+  width: 4.5rem;
+  height: 3px;
+  background: var(--color-accent);
+}
+
+[data-reveal] .section-rule::before {
+  transition: transform 1.2s var(--ease-out-expo);
+}
+
+[data-reveal] .section-rule::after {
+  transition: transform 0.8s var(--ease-out-expo) 0.35s;
+}
+
+[data-reveal][data-pending] .section-rule::before,
+[data-reveal][data-pending] .section-rule::after {
+  transform: scaleX(0);
+}
+
+/* Les trois phases : un filet d'accent se trace de gauche à droite, phase après phase. */
+.draw-line {
+  position: relative;
+}
+
+.draw-line::before {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--color-accent);
+  content: '';
+  transform-origin: left;
+}
+
+[data-reveal].draw-line::before {
+  transition: transform 0.9s var(--ease-out-expo);
+  transition-delay: calc(var(--reveal-delay, 0ms) * 4 + 200ms);
+}
+
+[data-reveal][data-pending].draw-line::before {
+  transform: scaleX(0);
+}
+
+/* --- 3. Bandeau défilant --- */
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee {
+  mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 48s linear infinite;
+}
+
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes soft-pulse {
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.pulse-dot {
+  animation: soft-pulse 2.4s ease-in-out infinite;
+}
+
+/* --- 4. Schéma SCAT ---
+   Scène en calques : un SVG statique (grille, liens, drones au repos) et, par-dessus, des éléments
+   HTML dont seules l'opacité et la transformation sont animées. Le navigateur confie ces deux
+   propriétés au compositeur graphique : l'animation ne coûte rien au fil principal.
+   Les images clés de chaque drone sont générées par le composant (src/lib/scat-scene.ts). */
+
+.scat-stage {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 2 / 1;
+  /* Les marqueurs se déplacent en unités de conteneur (cqw, cqh). */
+  container-type: size;
+  background-image: radial-gradient(var(--color-line) 1px, transparent 1px);
+  background-size: 5% 10%;
+}
+
+.scat-el {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+}
+
+.scat-disc,
+.scat-ring,
+.scat-glow,
+.scat-chief {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  translate: -50% -50%;
+}
+
+/* Drone en couverture : zone, point et lien vers le Chef d'Essaim. */
+.scat-disc {
+  border: 1.2px solid var(--color-accent);
+  background: radial-gradient(
+    circle closest-side,
+    var(--color-accent) 0 16%,
+    color-mix(in srgb, var(--color-accent) 14%, transparent) 17% 100%
+  );
+}
+
+.scat-link {
+  height: 1.4px;
+  margin-top: -0.7px;
+  background: var(--color-accent);
+  transform-origin: 0 50%;
+}
+
+/* Balise radio : un anneau part du drone quand il détecte la cible. */
+.scat-ring {
+  border: 1px solid var(--color-accent);
+}
+
+.scat-glow {
+  background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
+
+.scat-chief {
+  border: 1.8px solid var(--color-accent);
+  background: radial-gradient(circle closest-side, var(--color-accent) 0 38%, var(--color-surface) 40% 100%);
+}
+
+/* Cible (losange plein) et position prédite (losange en pointillé). */
+.scat-mark {
+  top: 0;
+  left: 0;
+  width: 2.1%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  background: var(--color-warm);
+}
+
+.scat-mark-ghost {
+  border: 1.2px dashed var(--color-warm);
+  background: none;
+  opacity: 0.8;
+}
+
+.scat-anim {
+  animation-duration: var(--scat-loop, 22s);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.scat-cover,
+.scat-pulse {
+  opacity: 0;
+}
+
+/* Le schéma ne démarre qu'une fois apparu à l'écran : rien à animer pendant le chargement de la page. */
+[data-reveal][data-pending] .scat-anim {
+  animation-name: none !important;
+}
+
+/* --- 5. Transitions entre pages (API View Transitions, pilotée par React) --- */
+
+@keyframes vt-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-rise {
+  from {
+    transform: translateY(10px);
+  }
+}
+
+@keyframes vt-slide {
+  from {
+    translate: var(--slide-offset) 0;
+  }
+}
+
+@keyframes vt-scale {
+  from {
+    scale: 0.96;
+  }
+}
+
+/* La page reste cliquable pendant une transition. */
+::view-transition {
+  pointer-events: none;
+}
+
+/* Navigation ordinaire : l'ancienne page s'efface vite, la nouvelle monte doucement. */
+::view-transition-old(.page-exit) {
+  animation: var(--motion-exit) ease-in both vt-fade reverse;
+}
+
+::view-transition-new(.page-enter) {
+  animation:
+    var(--motion-enter) ease-out var(--motion-exit) both vt-fade,
+    var(--motion-move) var(--ease-out-expo) var(--motion-exit) both vt-rise;
+}
+
+/* Entrer dans une fiche : le contenu glisse vers la gauche. Revenir : vers la droite. */
+::view-transition-old(.nav-forward) {
+  --slide-offset: -40px;
+  animation:
+    var(--motion-exit) ease-in both vt-fade reverse,
+    var(--motion-move) var(--ease-in-out-smooth) both vt-slide reverse;
+}
+
+::view-transition-new(.nav-forward) {
+  --slide-offset: 40px;
+  animation:
+    var(--motion-enter) ease-out var(--motion-exit) both vt-fade,
+    var(--motion-move) var(--ease-out-expo) both vt-slide;
+}
+
+::view-transition-old(.nav-back) {
+  --slide-offset: 40px;
+  animation:
+    var(--motion-exit) ease-in both vt-fade reverse,
+    var(--motion-move) var(--ease-in-out-smooth) both vt-slide reverse;
+}
+
+::view-transition-new(.nav-back) {
+  --slide-offset: -40px;
+  animation:
+    var(--motion-enter) ease-out var(--motion-exit) both vt-fade,
+    var(--motion-move) var(--ease-out-expo) both vt-slide;
+}
+
+/* Élément partagé : le titre d'une carte devient celui de la page ouverte. */
+::view-transition-group(.morph) {
+  animation-duration: var(--motion-move);
+  animation-timing-function: var(--ease-in-out-smooth);
+}
+
+/* Filtrage : les cartes restantes glissent à leur place, les autres s'effacent. */
+::view-transition-group(.card) {
+  animation-duration: var(--motion-move);
+  animation-timing-function: var(--ease-out-expo);
+}
+
+::view-transition-old(.card):only-child {
+  animation: var(--motion-exit) ease-in both vt-fade reverse;
+}
+
+::view-transition-new(.card):only-child {
+  animation:
+    var(--motion-enter) ease-out var(--motion-exit) both vt-fade,
+    var(--motion-move) var(--ease-out-expo) var(--motion-exit) both vt-scale;
+}
+
+/* La barre de navigation ne bouge pas : c'est le repère fixe pendant que le contenu change. */
+::view-transition-group(site-header) {
+  z-index: 100;
+  animation: none;
+}
+
+::view-transition-old(site-header) {
+  display: none;
+}
+
+::view-transition-new(site-header) {
+  animation: none;
+}
+
+/* Le pied de page glisse vers sa nouvelle position quand la hauteur de la page change. */
+::view-transition-group(site-footer) {
+  animation-duration: var(--motion-move);
+  animation-timing-function: var(--ease-out-expo);
+}
+
+/* --- 6. Micro-interactions --- */
+
+/* Indicateur de la section en cours dans la barre de navigation. */
+.nav-indicator {
+  position: absolute;
+  bottom: 0.4rem;
+  left: 0;
+  width: var(--indicator-width, 0px);
+  height: 2px;
+  border-radius: 1px;
+  background: var(--color-accent);
+  opacity: var(--indicator-opacity, 0);
+  transform: translateX(var(--indicator-x, 0px));
+  transition:
+    transform 0.5s var(--ease-out-expo),
+    width 0.5s var(--ease-out-expo),
+    opacity 0.25s ease;
+  pointer-events: none;
+}
+
+/* Cartes cliquables : légère élévation au survol, sur les appareils à pointeur uniquement. */
+@media (hover: hover) {
+  .lift {
+    transition:
+      transform 0.45s var(--ease-out-expo),
+      box-shadow 0.45s var(--ease-out-expo),
+      border-color 0.3s ease;
+  }
+
+  .lift:hover {
+    box-shadow: var(--shadow-lift);
+    transform: translateY(-4px);
+  }
+}
+
+/* Confirmation d'envoi : le cercle puis la coche se tracent. */
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.draw-check > * {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 0.55s var(--ease-out-expo) forwards;
+}
+
+.draw-check > :nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+/* Fenêtre de confirmation : apparition et disparition en douceur. */
+dialog {
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+  transition:
+    opacity 0.2s ease,
+    transform 0.28s var(--ease-out-expo),
+    overlay 0.28s allow-discrete,
+    display 0.28s allow-discrete;
+}
+
+dialog[open] {
+  opacity: 1;
+  transform: none;
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0);
+  transition:
+    background-color 0.28s ease,
+    overlay 0.28s allow-discrete,
+    display 0.28s allow-discrete;
+}
+
+dialog[open]::backdrop {
+  background: rgb(23 35 29 / 0.45);
+}
+
+@starting-style {
+  dialog[open] {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  dialog[open]::backdrop {
+    background: rgb(0 0 0 / 0);
+  }
+}
+
+/* --- 7. Réduire les animations --- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+
+  /* Bandeau et schéma : immobiles. Le bandeau devient défilable à la main,
+     le schéma montre un instant figé (le premier drone couvre la cible). */
+  .marquee-track,
+  .pulse-dot,
+  .scat-anim {
+    animation: none !important;
+  }
+
+  .marquee {
+    overflow-x: auto;
+    mask-image: none;
+  }
+
+  .scat-static {
+    opacity: 1;
+  }
+
+  .draw-check > * {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+}
