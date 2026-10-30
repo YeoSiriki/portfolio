@@ -2,6 +2,7 @@
 
 import bcrypt from 'bcryptjs';
 import { updateTag } from 'next/cache';
+import { signIn } from '@/auth';
 import { CONTENT_TAG } from '@/lib/constants';
 import { prisma } from '@/lib/db';
 import type { ActionResult } from '@/lib/forms';
@@ -87,9 +88,16 @@ export async function changePassword(input: unknown): Promise<ActionResult> {
   const matches = user?.passwordHash ? await bcrypt.compare(parsed.data.current, user.passwordHash) : false;
   if (!matches) return invalid({ current: 'Mot de passe actuel incorrect.' });
 
+  // Les sessions ouvertes ailleurs avec l'ancien mot de passe sont refusées dès maintenant ;
+  // ce navigateur reçoit aussitôt une nouvelle session.
   await prisma.user.update({
     where: { id: admin.id },
-    data: { passwordHash: await bcrypt.hash(parsed.data.next, 12) },
+    data: { passwordHash: await bcrypt.hash(parsed.data.next, 12), sessionVersion: { increment: 1 } },
   });
-  return { ok: true, message: 'Mot de passe modifié.' };
+  try {
+    await signIn('credentials', { email: admin.email, password: parsed.data.next, redirect: false });
+  } catch {
+    return { ok: true, message: 'Mot de passe modifié. Reconnecte-toi avec le nouveau mot de passe.' };
+  }
+  return { ok: true, message: 'Mot de passe modifié. Les autres appareils connectés ont été déconnectés.' };
 }

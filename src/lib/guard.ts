@@ -5,12 +5,16 @@ import { prisma } from './db';
 
 export type Admin = { id: string; email: string };
 
-/** Vérifie la session ET l'existence du compte administrateur en base. */
+/**
+ * Vérifie la session ET le compte administrateur en base. Une session ouverte avant la dernière
+ * déconnexion ou le dernier changement de mot de passe est refusée, même si son cookie est encore valide.
+ */
 export async function getAdmin(): Promise<Admin | null> {
   const session = await auth();
   if (!session?.user?.id || session.user.role !== 'ADMIN') return null;
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-  return user && user.role === 'ADMIN' ? { id: user.id, email: user.email } : null;
+  if (!user || user.role !== 'ADMIN' || user.sessionVersion !== session.user.sessionVersion) return null;
+  return { id: user.id, email: user.email };
 }
 
 /** Pour les pages : redirige vers la connexion si la personne n'est pas administratrice. */

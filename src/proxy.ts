@@ -8,8 +8,10 @@ export const proxy = auth((request) => {
   const isLogin = pathname === '/admin/login';
   const isAdmin = request.auth?.user?.role === 'ADMIN';
 
+  // Pas de renvoi de /admin/login vers /admin ici : le cookie d'une session fermée (déconnexion,
+  // nouveau mot de passe) dit encore « ADMIN », et seule la base peut le démentir. Le renvoyer vers
+  // /admin, qui le renvoie vers la connexion, ferait une boucle.
   if (!isAdmin && !isLogin) return NextResponse.redirect(new URL('/admin/login', request.nextUrl));
-  if (isAdmin && isLogin) return NextResponse.redirect(new URL('/admin', request.nextUrl));
   return NextResponse.next();
 });
 

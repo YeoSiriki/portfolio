@@ -5,6 +5,8 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { signIn, signOut } from '@/auth';
 import { ADMIN_HINT_COOKIE, LOGIN_MAX_ATTEMPTS } from '@/lib/constants';
+import { prisma } from '@/lib/db';
+import { getAdmin } from '@/lib/guard';
 import { clientIpHash, isRateLimited } from '@/lib/rate-limit';
 import { loginSchema } from '@/lib/schemas';
 
@@ -37,6 +39,9 @@ export async function loginWithGitHub(): Promise<void> {
 }
 
 export async function logout(): Promise<void> {
+  // Toutes les sessions ouvertes, sur ce navigateur comme ailleurs, cessent d'être acceptées.
+  const admin = await getAdmin();
+  if (admin) await prisma.user.update({ where: { id: admin.id }, data: { sessionVersion: { increment: 1 } } });
   // Le site public cesse aussitôt d'afficher le lien vers l'admin.
   (await cookies()).delete(ADMIN_HINT_COOKIE);
   await signOut({ redirectTo: '/admin/login' });

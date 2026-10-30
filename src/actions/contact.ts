@@ -9,6 +9,9 @@ import { contactSchema, fieldErrors } from '@/lib/schemas';
 import { messageRetentionMonths, siteUrl } from '@/lib/site';
 
 const MAX_MESSAGES = 5;
+// Plafond pour tout le site : un robot qui change d'adresse IP ne peut ni noyer la boîte de réception,
+// ni épuiser le quota d'envoi du compte Gmail.
+const MAX_MESSAGES_ALL = 20;
 const WINDOW_MS = 60 * 60 * 1000;
 
 export async function sendContactMessage(input: unknown): Promise<ActionResult> {
@@ -24,6 +27,13 @@ export async function sendContactMessage(input: unknown): Promise<ActionResult> 
   const ipHash = await clientIpHash();
   if (!(await rateLimit(`contact:${ipHash}`, MAX_MESSAGES, WINDOW_MS)).ok) {
     return { ok: false, error: 'Trop de messages envoyés. Réessayez dans une heure.' };
+  }
+  if (!(await rateLimit('contact:tous', MAX_MESSAGES_ALL, WINDOW_MS)).ok) {
+    return {
+      ok: false,
+      error:
+        "Le formulaire reçoit trop de messages en ce moment. Réessayez dans une heure, ou écrivez à l'adresse e-mail indiquée sur cette page.",
+    };
   }
 
   await prisma.message.create({ data: { ...message, ipHash } });

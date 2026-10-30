@@ -45,7 +45,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!user?.passwordHash || !matches || user.role !== 'ADMIN') return null;
 
         await resetRateLimit(key);
-        return { id: user.id, email: user.email, role: user.role };
+        return { id: user.id, email: user.email, role: user.role, sessionVersion: user.sessionVersion };
       },
     }),
     ...(githubLoginEnabled ? [GitHub] : []),
@@ -79,16 +79,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           token.uid = admin.id;
           token.role = admin.role;
           token.email = admin.email;
+          token.sv = admin.sessionVersion;
         }
       } else if (user) {
         token.uid = user.id;
         token.role = user.role;
+        token.sv = user.sessionVersion;
       }
       return token;
     },
     session({ session, token }) {
       session.user.id = typeof token.uid === 'string' ? token.uid : '';
       session.user.role = token.role === 'ADMIN' ? 'ADMIN' : undefined;
+      session.user.sessionVersion = typeof token.sv === 'number' ? token.sv : undefined;
       return session;
     },
   },
